@@ -1,4 +1,16 @@
+# Byte-compiled / cache files
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Environment
+venv/
+.env
+
+# Model + data outputs
+*.pkl
+*.csv
 data/
 models/
+
+# System files
+.DS_Store
