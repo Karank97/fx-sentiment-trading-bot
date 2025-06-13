@@ -1060,3 +1060,27 @@ Traceback (most recent call last):
   File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/pathlib.py", line 1135, in read_text
     return f.read()
 OSError: [Errno 11] Resource deadlock avoided
+Asking to truncate to max_length but no maximum length is provided and the model has no predefined maximum length. Default to no truncation.
+🧠 Prediction: negative (confidence: 1.0000)
+Traceback (most recent call last):
+  File "/Users/karan/Documents/fx-sentiment-trading-bot/src/auto_signal_loop.py", line 6, in <module>
+    from live_signal_generator import generate_trade_signal, log_signals
+  File "/Users/karan/Documents/fx-sentiment-trading-bot/src/live_signal_generator.py", line 4, in <module>
+    from inference import predict_sentiment
+ImportError: cannot import name 'predict_sentiment' from 'inference' (/Users/karan/Documents/fx-sentiment-trading-bot/src/inference.py)
+📈 Signal: LONG EUR/USD | Sentiment: positive | Confidence: 0.9851
+📝 Logged 1 signal(s) to data/live_signals_log.csv
+Traceback (most recent call last):
+  File "/Users/karan/Documents/fx-sentiment-trading-bot/src/auto_signal_loop.py", line 6, in <module>
+    from live_signal_generator import generate_trade_signal, log_signals
+ImportError: cannot import name 'generate_trade_signal' from 'live_signal_generator' (/Users/karan/Documents/fx-sentiment-trading-bot/src/live_signal_generator.py)
+📈 Signal: LONG EUR/USD | Sentiment: positive | Confidence: 0.9851
+📝 Logged 1 signal(s) to data/live_signals_log.csv
+Traceback (most recent call last):
+  File "/Users/karan/Documents/fx-sentiment-trading-bot/src/auto_signal_loop.py", line 6, in <module>
+    from live_signal_generator import generate_trade_signal, log_signals
+ImportError: cannot import name 'generate_trade_signal' from 'live_signal_generator' (/Users/karan/Documents/fx-sentiment-trading-bot/src/live_signal_generator.py)
+Traceback (most recent call last):
+  File "/Users/karan/Documents/fx-sentiment-trading-bot/src/auto_signal_loop.py", line 5, in <module>
+    from sentiment_labeler import label_sentiment
+ModuleNotFoundError: No module named 'sentiment_labeler'

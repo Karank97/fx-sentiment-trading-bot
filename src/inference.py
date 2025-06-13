@@ -1,35 +1,28 @@
-import re
+# src/inference.py
+
+import pandas as pd
 import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import BertTokenizer, BertForSequenceClassification
 from scipy.special import softmax
 
-MODEL_NAME = "ProsusAI/finbert"
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# Load FinBERT model + tokenizer
+MODEL_NAME = "yiyanghkust/finbert-tone"
+tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+model = BertForSequenceClassification.from_pretrained(MODEL_NAME)
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME).to(device)
-label_map = {0: "negative", 1: "neutral", 2: "positive"}
-
-def clean_text(text):
-    text = text.lower()
-    text = re.sub(r"http\S+", "", text)
-    text = re.sub(r"[^a-zA-Z\s]", "", text)
-    return text.strip()
-
-def predict_sentiment(title, description):
-    text = clean_text(f"{title} {description}")
-    inputs = tokenizer(text, return_tensors="pt", truncation=True).to(device)
+def finbert_predict(text):
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
     with torch.no_grad():
         outputs = model(**inputs)
-    probs = softmax(outputs.logits.cpu().numpy()[0])
-    label_idx = probs.argmax()
-    label = label_map[label_idx]
-    confidence = float(probs[label_idx])
-    return {"label": label, "confidence": round(confidence, 4)}
+    probs = softmax(outputs.logits.numpy()[0])
+    labels = ["negative", "neutral", "positive"]
+    idx = probs.argmax()
+    return labels[idx], float(probs[idx])
 
-if __name__ == "__main__":
-    # Example usage
-    title = "USD rallies as Fed signals aggressive rate hike"
-    description = "The dollar strengthened after the Federal Reserve hinted at a steeper tightening path."
-    result = predict_sentiment(title, description)
-    print(f"🧠 Prediction: {result['label']} (confidence: {result['confidence']})")
+# Load most recent news item
+df = pd.read_csv("data/cleaned_fx_news.csv")
+latest = df.iloc[-1]
+combined_text = f"{latest['title']} {latest['description']}"
+
+label, confidence = finbert_predict(combined_text)
+print(f"🧠 Prediction: {label} (confidence: {confidence:.4f})")

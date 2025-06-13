@@ -25,9 +25,9 @@ This bot explores if macro sentiment in FX headlines can generate alpha. It scra
 
 ---
 
-## 🖥️ Run It Locally
+## 🖥️ How to Run It
 
-### 1. Clone + Setup
+### 1. Clone + Setup Environment
 
 ```bash
 git clone https://github.com/Karank97/fx-sentiment-trading-bot.git
@@ -35,22 +35,21 @@ cd fx-sentiment-trading-bot
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-2. Run Full Pipeline
+2. Run Inference Pipeline
 bash
 Copy
 Edit
-python3 src/data_pipeline.py              # get FX news
-python3 src/clean_news.py                 # clean/filter news
-python3 src/sentiment_labeler.py          # label with FinBERT
-python3 src/train_random_forest.py        # train model
-python3 src/live_signal_generator.py      # make predictions
-python3 src/backtest_signals.py           # simulate returns
-3. Launch Dashboard
+python3 src/data_pipeline.py              # fetch FX news
+python3 src/clean_news.py                 # clean and filter news
+python3 src/sentiment_labeler.py          # label sentiment using FinBERT
+python3 src/live_signal_generator.py      # predict signals and log output
+python3 src/backtest_signals.py           # simulate trades on logged signals
+3. Launch Streamlit Dashboard
 bash
 Copy
 Edit
 streamlit run dashboard/app.py
-📍 Open in browser: http://localhost:8501
+Then open: http://localhost:8501
 
 🔁 Optional: Auto-Loop with Cron
 cron

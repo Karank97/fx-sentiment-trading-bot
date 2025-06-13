@@ -1,70 +1,56 @@
-import re
+# src/live_signal_generator.py
+
 import pandas as pd
+import torch
+from transformers import BertTokenizer, BertForSequenceClassification
+from scipy.special import softmax
 from datetime import datetime
-from inference import predict_sentiment
-import os
 
-LOG_FILE = "data/live_signals_log.csv"
+# Load FinBERT
+MODEL_NAME = "yiyanghkust/finbert-tone"
+tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+model = BertForSequenceClassification.from_pretrained(MODEL_NAME)
 
-CURRENCY_PAIRS = {
-    "EUR/USD": ("eur", "usd"),
-    "USD/JPY": ("usd", "jpy"),
-    "GBP/USD": ("gbp", "usd"),
-    "USD/CHF": ("usd", "chf"),
-    "AUD/USD": ("aud", "usd"),
-    "USD/CAD": ("usd", "cad"),
-    "NZD/USD": ("nzd", "usd")
-}
-
-def identify_currency_pair(text):
-    text = text.lower()
-    found = []
-    for pair, (base, quote) in CURRENCY_PAIRS.items():
-        if base in text or quote in text:
-            found.append((pair, base, quote))
-    return found
-
-def generate_trade_signal(title, description):
-    result = predict_sentiment(title, description)
-    text = f"{title} {description}".lower()
-    predictions = []
-
-    for pair, base, quote in identify_currency_pair(text):
-        label = result["label"]
-        if label == "positive":
-            signal = f"LONG {pair}" if base in text else f"SHORT {pair}"
-        elif label == "negative":
-            signal = f"SHORT {pair}" if base in text else f"LONG {pair}"
-        else:
-            signal = f"NEUTRAL on {pair}"
-
-        predictions.append({
-            "timestamp": datetime.utcnow().isoformat(),
-            "pair": pair,
-            "title": title,
-            "description": description,
-            "label": label,
-            "confidence": result["confidence"],
-            "signal": signal
-        })
-
-    return predictions
-
-def log_signals(predictions):
-    df = pd.DataFrame(predictions)
-    if not os.path.exists(LOG_FILE):
-        df.to_csv(LOG_FILE, index=False)
+# Define mapping from sentiment to FX signals
+def sentiment_to_signal(sentiment):
+    if sentiment == "positive":
+        return "LONG EUR/USD"
+    elif sentiment == "negative":
+        return "SHORT USD/JPY"
     else:
-        df.to_csv(LOG_FILE, mode="a", header=False, index=False)
-    print(f"📝 Logged {len(df)} signal(s) to {LOG_FILE}")
+        return "NEUTRAL"
 
-if __name__ == "__main__":
-    # Example headline
-    title = "Yen weakens as BoJ holds rates steady"
-    description = "JPY slides after Bank of Japan signals continued stimulus."
+# Prediction function
+def finbert_predict(text):
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    probs = softmax(outputs.logits.numpy()[0])
+    labels = ["negative", "neutral", "positive"]
+    idx = probs.argmax()
+    return labels[idx], float(probs[idx])
 
-    predictions = generate_trade_signal(title, description)
+# Load cleaned news
+df = pd.read_csv("data/cleaned_fx_news.csv")
+latest = df.iloc[-1]
+text = f"{latest['title']} {latest['description']}"
+timestamp = datetime.utcnow().isoformat()
 
-    for s in predictions:
-        print(f"📈 Signal: {s['signal']} | Sentiment: {s['label']} | Confidence: {s['confidence']}")
-    log_signals(predictions)
+# Run prediction
+sentiment, confidence = finbert_predict(text)
+signal = sentiment_to_signal(sentiment)
+
+# Log result
+log_data = {
+    "timestamp": [timestamp],
+    "pair": [signal.split()[-1]],
+    "headline": [text],
+    "label": [sentiment],
+    "confidence": [confidence],
+    "signal": [signal]
+}
+log_df = pd.DataFrame(log_data)
+log_df.to_csv("data/live_signals_log.csv", mode="a", index=False, header=not pd.io.common.file_exists("data/live_signals_log.csv"))
+
+print(f"📈 Signal: {signal} | Sentiment: {sentiment} | Confidence: {confidence:.4f}")
+print(f"📝 Logged 1 signal(s) to data/live_signals_log.csv")
