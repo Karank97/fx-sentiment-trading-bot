@@ -1,7 +1,7 @@
 # 💹 FX Sentiment Trading Bot
 
-A real-time machine learning pipeline that converts FX news sentiment into trading signals for major currency pairs (e.g., EUR/USD, USD/JPY).  
-This project uses NLP (FinBERT), a trained classifier, and a full ML ops loop with signal logging, backtesting, and live dashboards.
+A real-time machine learning pipeline that converts financial news sentiment into trading signals for major currency pairs (e.g., EUR/USD, USD/JPY).  
+This project uses FinBERT for sentiment classification and maps signals to live trade directions with a Streamlit dashboard for visualization.
 
 [![Python](https://img.shields.io/badge/Built_with-Python-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/UI-Streamlit-ff4b4b)](https://streamlit.io/)
@@ -11,23 +11,30 @@ This project uses NLP (FinBERT), a trained classifier, and a full ML ops loop wi
 
 ## 📌 Project Overview
 
-This bot explores if macro sentiment in FX headlines can generate alpha. It scrapes news, classifies tone with FinBERT, maps it to signals (LONG/SHORT/NEUTRAL), logs predictions, simulates trades, and displays everything on a dashboard.
+This bot explores whether real-time sentiment from FX news can generate statistically meaningful trading signals. Inspired by macro-trading strategies and sentiment-driven volatility, this pipeline does the following:
+
+- Scrapes FX news headlines
+- Cleans and filters for relevant financial news
+- Labels sentiment using **FinBERT**, a transformer model for financial text
+- Maps sentiment to LONG / SHORT / NEUTRAL signals for currency pairs
+- Logs signals and backtests them against historical FX price data
+- Visualizes all signals via a live Streamlit dashboard
 
 ---
 
 ## 🧠 Features
 
-- ✅ **FinBERT Sentiment Classifier** (better FX domain accuracy)
-- ✅ **Real-Time Signal Generator** (auto-loop via cron)
-- ✅ **Backtesting Engine** (P&L, return %, Sharpe ratio)
-- ✅ **Live Dashboard** (Streamlit + Plotly)
-- ✅ **Clean Modular Code** (add LSTM, APIs, alerts easily)
+- ✅ **FinBERT Sentiment Classifier**: Transformer-based financial NLP
+- ✅ **Real-Time Signal Generator**: Converts sentiment to FX trading direction
+- ✅ **Backtesting Engine**: Measures return %, win rate, and Sharpe ratio
+- ✅ **Streamlit Dashboard**: Interactive UI to view and filter logged signals
+- ✅ **Auto Signal Loop**: Optional cron job or scheduled loop to auto-pull headlines every 10 mins
 
 ---
 
 ## 🖥️ How to Run It
 
-### 1. Clone + Setup Environment
+### 1. Clone + Set Up Environment
 
 ```bash
 git clone https://github.com/Karank97/fx-sentiment-trading-bot.git
@@ -35,54 +42,99 @@ cd fx-sentiment-trading-bot
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-2. Run Inference Pipeline
-bash
-Copy
-Edit
-python3 src/data_pipeline.py              # fetch FX news
-python3 src/clean_news.py                 # clean and filter news
-python3 src/sentiment_labeler.py          # label sentiment using FinBERT
-python3 src/live_signal_generator.py      # predict signals and log output
-python3 src/backtest_signals.py           # simulate trades on logged signals
-3. Launch Streamlit Dashboard
-bash
-Copy
-Edit
+````
+
+### 2. Run the Full Pipeline
+
+```bash
+python3 src/data_pipeline.py            # Download fresh FX news
+python3 src/clean_news.py               # Filter relevant FX headlines
+python3 src/sentiment_labeler.py        # (optional: VADER only — default is FinBERT)
+python3 src/inference.py                # Run FinBERT prediction on latest news
+python3 src/live_signal_generator.py    # Generate trade signals from labeled news
+python3 src/backtest_signals.py         # Backtest signal performance
+```
+
+### 3. Launch Streamlit Dashboard
+
+```bash
 streamlit run dashboard/app.py
-Then open: http://localhost:8501
+```
 
-🔁 Optional: Auto-Loop with Cron
-cron
-Copy
-Edit
-*/10 * * * * cd /path/to/project && /path/to/venv/bin/python3 src/auto_signal_loop.py >> cron_log.txt 2>&1
-This runs sentiment + signal prediction every 10 minutes.
+Then go to: [http://localhost:8501](http://localhost:8501)
 
-📊 Signal Output Example
-bash
-Copy
-Edit
-🧠 Prediction: positive (confidence: 0.91)
-📈 Signal: LONG GBP/USD | Sentiment: positive | Confidence: 0.91
-📁 Project Structure
-bash
-Copy
-Edit
+---
+
+## 🔁 Optional: Run Signal Loop Automatically
+
+```bash
+python3 src/auto_signal_loop.py
+```
+
+To run this every 10 minutes as a background job, set up a cron job like:
+
+```bash
+*/10 * * * * cd /Users/karan/Documents/fx-sentiment-trading-bot && /Users/karan/Documents/fx-sentiment-trading-bot/venv/bin/python3 src/auto_signal_loop.py >> cron_log.txt 2>&1
+```
+
+---
+
+## 📊 Example Output
+
+```bash
+🧠 Prediction: positive (confidence: 0.88)
+📈 Signal: LONG EUR/USD | Sentiment: positive | Confidence: 0.88
+📝 Logged 1 signal(s) to data/live_signals_log.csv
+```
+
+---
+
+## 🧰 Tech Stack
+
+* **Python 3.10**
+* **FinBERT** – Transformer-based financial sentiment model
+* **Huggingface Transformers** – Model hosting and inference
+* **YFinance** – FX price data
+* **Streamlit** – Dashboard and live visualization
+* **Pandas** – Data wrangling
+* **Cron (optional)** – For background signal automation
+
+---
+
+## 📁 Project Structure
+
+```
 fx-sentiment-trading-bot/
-├── data/                 # Cleaned, labeled, and signal logs
-├── models/               # ML model + vectorizer
-├── src/                  # Code modules
-├── dashboard/            # Streamlit UI
+│
+├── data/                 # Raw, cleaned, labeled, and logged data
+├── src/                  # Source code
+│   ├── data_pipeline.py
+│   ├── clean_news.py
+│   ├── inference.py
+│   ├── live_signal_generator.py
+│   ├── auto_signal_loop.py
+│   └── backtest_signals.py
+├── dashboard/            # Streamlit dashboard
+│   └── app.py
 ├── requirements.txt
+├── .gitignore
 └── README.md
-🚀 Roadmap
- Add rolling Sharpe + drawdown to dashboard
+```
 
- Deploy to Streamlit Cloud or HuggingFace Spaces
+---
 
- Add Telegram/Email signal alerts
+## 🚧 Future Improvements
 
- Plug into live paper trading (OANDA API)
+* 📉 Add risk-adjusted performance metrics (Sharpe ratio, max drawdown)
+* 🧠 Fine-tune FinBERT on FX-specific labeled data
+* 💹 Integrate live trading via OANDA/Alpaca API
+* 🔔 Add Telegram or email alerts for new signals
+* 📊 Visualize rolling returns, PnL, and drawdowns in dashboard
 
-📜 License
-MIT License — free for commercial or personal use.
+---
+
+## 📜 License
+
+This project is licensed under the MIT License – see [LICENSE] for details.
+
+
