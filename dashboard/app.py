@@ -1,42 +1,52 @@
-import pandas as pd
 import streamlit as st
-import os
+import pandas as pd
+import plotly.express as px
 from datetime import datetime
 
-LOG_FILE = "data/live_signals_log.csv"
+st.set_page_config(page_title="FX Sentiment Trading Bot", layout="wide")
 
-st.set_page_config(page_title="FX Sentiment Trading Dashboard", layout="wide")
+st.title("💹 FX Sentiment Trading Bot Dashboard")
 
-st.title("💹 FX Sentiment Trading Dashboard")
-st.markdown("Real-time sentiment predictions and trading signals.")
-
-# Load data
-if not os.path.exists(LOG_FILE):
-    st.warning("No signals logged yet.")
-    st.stop()
-
-df = pd.read_csv(LOG_FILE)
-
-# Filters
-pairs = df["pair"].unique().tolist()
-selected_pairs = st.multiselect("Select Currency Pairs", pairs, default=pairs)
-
-labels = df["label"].unique().tolist()
-selected_labels = st.multiselect("Select Sentiment", labels, default=labels)
-
+# Load signals
+df = pd.read_csv("data/live_signals_log.csv")
 df["timestamp"] = pd.to_datetime(df["timestamp"])
-df = df[df["pair"].isin(selected_pairs) & df["label"].isin(selected_labels)]
 
-# Display Table
-st.subheader("📋 Latest Signals")
-st.dataframe(df.sort_values("timestamp", ascending=False), use_container_width=True)
+# Sidebar filters
+st.sidebar.header("Filters")
+currency_filter = st.sidebar.multiselect(
+    "Currency Pair", options=df["pair"].unique(), default=df["pair"].unique()
+)
+sentiment_filter = st.sidebar.multiselect(
+    "Sentiment", options=df["label"].unique(), default=df["label"].unique()
+)
 
-# Summary
-st.subheader("📈 Signal Summary")
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Signals", len(df))
-col2.metric("Positive", (df["label"] == "positive").sum())
-col3.metric("Negative", (df["label"] == "negative").sum())
+# Apply filters
+filtered_df = df[df["pair"].isin(currency_filter)]
+filtered_df = filtered_df[filtered_df["label"].isin(sentiment_filter)]
 
-# Auto-refresh
-st.markdown("🔁 Refresh this page to get the latest updates.")
+# Show data
+st.subheader("📄 Logged Trade Signals")
+st.dataframe(filtered_df.sort_values(by="timestamp", ascending=False), use_container_width=True)
+
+# Chart 1: Sentiment counts by currency pair
+st.subheader("📊 Sentiment Distribution by Pair")
+sentiment_chart = px.histogram(
+    filtered_df,
+    x="pair",
+    color="label",
+    barmode="group",
+    title="Sentiment Count per FX Pair",
+    labels={"label": "Sentiment"},
+)
+st.plotly_chart(sentiment_chart, use_container_width=True)
+
+# Chart 2: Signal volume over time
+st.subheader("⏱ Signal Volume Over Time")
+time_chart = px.histogram(
+    filtered_df,
+    x="timestamp",
+    color="pair",
+    nbins=30,
+    title="Signal Frequency Over Time",
+)
+st.plotly_chart(time_chart, use_container_width=True)

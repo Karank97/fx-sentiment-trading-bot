@@ -59,13 +59,12 @@ def log_signals(predictions):
     print(f"📝 Logged {len(df)} signal(s) to {LOG_FILE}")
 
 if __name__ == "__main__":
-    # Example live headline
-    title = "Yen weakens as BoJ maintains ultra-loose policy"
-    description = "JPY slides further as Bank of Japan holds rates, diverging from global tightening."
+    # Example headline
+    title = "Yen weakens as BoJ holds rates steady"
+    description = "JPY slides after Bank of Japan signals continued stimulus."
 
     predictions = generate_trade_signal(title, description)
 
     for s in predictions:
         print(f"📈 Signal: {s['signal']} | Sentiment: {s['label']} | Confidence: {s['confidence']}")
-
     log_signals(predictions)
