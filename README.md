@@ -1,4 +1,3 @@
-
 # 💹 FX Sentiment Trading Bot
 
 A real-time machine learning pipeline that converts financial news sentiment into trading signals for major currency pairs (e.g., EUR/USD, USD/JPY).  
@@ -47,81 +46,68 @@ cd fx-sentiment-trading-bot
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-```
-
-### 2. Run the Full Pipeline
-
-```bash
-python3 src/data_pipeline.py              # fetch FX news
-python3 src/clean_news.py                 # clean and filter news
-python3 src/sentiment_labeler.py          # label sentiment with FinBERT
-python3 src/live_signal_generator.py      # generate and log trade signals
-python3 src/backtest_signals.py           # simulate trades on signals
-```
-
-### 3. Launch Streamlit Dashboard
-
-```bash
+2. Run the Full Pipeline
+bash
+Copy
+Edit
+# Run full pipeline (in order)
+python3 src/core/data_pipeline.py
+python3 src/nlp/clean_news.py
+python3 src/nlp/inference.py
+python3 src/core/signal_generator.py
+python3 src/core/backtest_signals.py
+3. Launch Streamlit Dashboard
+bash
+Copy
+Edit
 streamlit run dashboard/app.py
-```
+Then visit: http://localhost:8501
 
-Then visit: [http://localhost:8501](http://localhost:8501)
+📊 Example Signal Output
+bash
+Copy
+Edit
+📈 Signal: LONG EUR/USD | Sentiment: bullish | Confidence: 0.89
+📉 Signal: SHORT USD/JPY | Sentiment: bearish | Confidence: 0.76
+🧰 Tech Stack
+Python 3.10
 
----
+FinBERT – Sentiment classification
 
-## 📊 Example Signal Output
+Scikit-learn – Evaluation tools
 
-```bash
-📈 Signal: LONG EUR/USD | Sentiment: positive | Confidence: 0.89
-📈 Signal: SHORT USD/JPY | Sentiment: negative | Confidence: 0.76
-```
+YFinance – FX price data
 
----
+Streamlit – Dashboard
 
-## 🧰 Tech Stack
+Joblib – Model persistence
 
-* **Python 3.10**
-* **FinBERT** – Sentiment classification
-* **Scikit-learn** – Evaluation tools
-* **YFinance** – FX price data
-* **Streamlit** – Dashboard
-* **Joblib** – Model persistence
-* **Pandas** – Data wrangling
+Pandas – Data wrangling
 
----
-
-## 📁 Project Structure
-
-```
+📁 Project Structure
+bash
+Copy
+Edit
 fx-sentiment-trading-bot/
 │
 ├── data/                 # Raw, cleaned, labeled, and backtest CSVs
-├── models/               # (Optional) — can be removed if using FinBERT only
-├── src/                  # All Python modules
-│   ├── data_pipeline.py
-│   ├── clean_news.py
-│   ├── sentiment_labeler.py
-│   ├── inference.py
-│   ├── live_signal_generator.py
-│   └── backtest_signals.py
+├── src/
+│   ├── core/             # Pipeline: fetch, backtest, signal, returns
+│   ├── live/             # Automated signal loops
+│   ├── nlp/              # Clean + label FX news sentiment
+│   └── utils/            # Helper utilities
 ├── dashboard/            # Streamlit UI app
-│   └── app.py
+├── scripts/              # CLI tools (e.g., backfill, clean logs)
 ├── requirements.txt
-├── .gitignore
 └── README.md
-```
+🚧 Future Improvements
+📈 Add cumulative PnL + drawdown to dashboard
 
----
+🔄 Automate signal loop with CRON scheduler
 
-## 🚧 Future Improvements
+💸 Integrate OANDA or Alpaca for paper/live trading
 
-* 📈 Add cumulative PnL + drawdown to dashboard
-* 🔄 Automate signal loop with CRON scheduler
-* 💸 Integrate OANDA or Alpaca for paper/live trading
-* 📤 Add Telegram or email alerts for signals
+📤 Add Telegram or email alerts for signals
 
----
-
-## 📜 License
-
+📜 License
 This project is licensed under the MIT License.
