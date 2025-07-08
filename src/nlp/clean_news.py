@@ -2,12 +2,10 @@ import os
 import json
 import pandas as pd
 import re
-from datetime import datetime
 
 RAW_DATA_DIR = "data/"
 CLEANED_FILE = "data/cleaned_fx_news.csv"
 
-# Keywords to filter FX/macro content
 FX_KEYWORDS = [
     "forex", "currency", "central bank", "rate hike", "rate cut", "inflation", "interest rate",
     "dollar", "euro", "yen", "pound", "usd", "eur", "jpy", "gbp", "market", "bond", "fed", "ecb", "boj", "boe"
@@ -16,8 +14,8 @@ FX_KEYWORDS = [
 def clean_text(text):
     if not text:
         return ""
-    text = re.sub(r"http\S+", "", text)  # remove URLs
-    text = re.sub(r"[^a-zA-Z\s]", "", text)  # remove punctuation
+    text = re.sub(r"http\\S+", "", text)
+    text = re.sub(r"[^a-zA-Z\\s]", "", text)
     text = text.lower().strip()
     return text
 

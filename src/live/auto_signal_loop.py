@@ -1,12 +1,17 @@
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import time
 import pandas as pd
-from data_pipeline import fetch_fx_news
-from clean_news import process_news_files
-from sentiment_labeler import label_sentiment
-from live_signal_generator import generate_trade_signal, log_signals
+
+from core.data_pipeline import fetch_fx_news
+from nlp.clean_news import process_news_files
+from nlp.sentiment_labeler import label_sentiment
+from live.live_signal_generator import generate_trade_signal, log_signals
 
 NEWS_LIMIT = 100
 LOOP_DELAY = 600  # 10 minutes
+
 
 def run_pipeline_once():
     print("🕵️ Fetching FX news...")
@@ -33,6 +38,7 @@ def run_pipeline_once():
         print(f"✅ Logged {len(all_signals)} signal(s).\n")
     else:
         print("⚠️ No signals generated.\n")
+
 
 if __name__ == "__main__":
     print("🚀 Auto loop started (CTRL+C to stop)")
